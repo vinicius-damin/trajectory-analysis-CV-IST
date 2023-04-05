@@ -12,7 +12,6 @@ def loadImgDatasetPaths():
     return images
 
 # Loads the Ground Truth (.txt file)
-# Loads the Ground Truth (.txt file)
 def loadGroundTruth():
 
     dir_path = "PutTheGroundTruthHere"
@@ -62,6 +61,7 @@ def showGTworking(all_images_path, groundTruthDf):
 
         img = cv2.imread(img_path)
         df = groundTruthDf
+        # select all the boxes that shall appear in frame number idx+1
         boxes = df[df["Frame number"] == idx+1]
         
         for _, row in boxes.iterrows():
