@@ -2,6 +2,7 @@ import cv2
 import os
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from a_GT_visualization import createBoundingBox, createIdentityNumber
 
 # Loads all the names of the frames from the dataset
@@ -240,6 +241,109 @@ def showMTTrajectories(all_images_path, myTruthDf):
     cv2.destroyAllWindows()
 
 
+
+def generateSimpleHeatmap(all_images_path, myTruthDf, size=10):
+
+    print("\n\t -Calculating simple heatmap")
+
+    # Read the first image to get its dimensions
+    img = cv2.imread(all_images_path[0])
+    height, width, channels = img.shape
+
+    # Initialize the heatmap
+    heatmap = np.zeros((height, width), dtype=np.float32)
+
+    # Loop over all the images
+    for i, img_path in enumerate(all_images_path):
+        # Read the image
+        img = cv2.imread(img_path)
+
+        # Get the rows for the current frame
+        df = myTruthDf[myTruthDf['Frame number'] == i]
+
+        # Loop over the rows
+        for _, row in df.iterrows():
+            # Get the centroid coordinates
+            x = int(row['xCentroid'])
+            y = int(row['yCentroid'])
+
+            # Add to the heatmap around the given coordinates
+            heatmap[max(0, y-size):min(height, y+size), max(0, x-size):min(width, x+size)] += 1
+
+    # Calculate the percentage of time spent in each area
+    total_time = len(all_images_path)
+    heatmap_percentage = heatmap / total_time * 100
+
+    # Plot the heatmap
+    plt.imshow(heatmap_percentage, cmap='inferno')
+
+    # Add a colorbar
+    cbar = plt.colorbar()
+    cbar.set_label('% of time spent in area')
+
+    # Title
+    plt.title("Occupancy heatmap (whole scene)")
+
+    # Show the plot
+    plt.show()
+    print("Plotted")
+    
+def generateGaussianHeatmap(all_images_path, myTruthDf, sigma=20):
+
+    print("\n\t -Calculating Gaussian heatmap (whole scene)")
+
+    # Read the first image to get its dimensions
+    img = cv2.imread(all_images_path[0])
+    height, width, channels = img.shape
+
+    # Initialize the heatmap with zeros
+    heatmap = np.zeros((height, width), dtype=np.float32)
+
+    # Loop over all the images
+    for i, img_path in enumerate(all_images_path):
+        # Read the image
+        img = cv2.imread(img_path)
+
+        # Get the rows for the current frame
+        df = myTruthDf[myTruthDf['Frame number'] == i]
+
+        # Loop over the rows
+        for _, row in df.iterrows():
+            # Get the centroid coordinates
+            x = int(row['xCentroid'])
+            y = int(row['yCentroid'])
+
+            # Set the standard deviation of the Gaussian kernel
+            sigma = sigma
+
+            # Calculate the distance from the current point to all other points
+            xv, yv = np.meshgrid(np.arange(width), np.arange(height))
+            distance = np.sqrt((xv - x)**2 + (yv - y)**2)
+
+            # Calculate the weights for each pixel based on the distance
+            weights = np.exp(-distance**2 / (2 * sigma**2))
+
+            # Update the heatmap with the weighted values
+            heatmap += weights
+
+    # Calculate the percentage of time spent in each area
+    total_time = len(all_images_path)
+    heatmap_percentage = heatmap / total_time * 100
+
+    # Plot the heatmap
+    plt.imshow(heatmap_percentage, cmap='inferno')
+
+    # Add a colorbar
+    cbar = plt.colorbar()
+    cbar.set_label('% of time spent in area')
+
+    # Title
+    plt.title("Occupancy heatmap (whole scene)")
+
+    # Show the plot
+    plt.show()
+    print("Plotted")
+
 if __name__ == "__main__":
 
     # Getting images
@@ -256,6 +360,12 @@ if __name__ == "__main__":
 
     # Shows the trajectories dinamically
     showMTTrajectories(all_images_path, myTruthDf)
+
+    # Plot the a simple static heatmap (1 calculations per person, n per frame)
+    generateSimpleHeatmap(all_images_path, myTruthDf, size=10)
+
+    # Plot the static heatmap using gaussian metric (w*h calculations per person, n*w*h per frame)
+    generateGaussianHeatmap(all_images_path, myTruthDf, sigma=20)
 
 
 
