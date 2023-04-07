@@ -344,13 +344,72 @@ def generateGaussianHeatmap(all_images_path, myTruthDf, sigma=20):
     plt.show()
     print("Plotted")
 
+def generateDinamicHeatmap(all_images_path, myTruthDf, sigma=20):
+    # Loop over all the images
+    for i, img_path in enumerate(all_images_path):
+        # Read the image
+        img = cv2.imread(img_path)
+
+        # Get the rows for the current frame
+        df = myTruthDf[myTruthDf['Frame number'] == i]
+
+        # Read the first image to get its dimensions
+        height, width, channels = img.shape
+
+        # Initialize the heatmap with zeros
+        heatmap = np.zeros((height, width), dtype=np.float32)
+
+        # Loop over the rows
+        for _, row in df.iterrows():
+            # Get the centroid coordinates
+            x = int(row['xCentroid'])
+            y = int(row['yCentroid'])
+
+            # Set the standard deviation of the Gaussian kernel
+            sigma = sigma
+
+            # Calculate the distance from the current point to all other points
+            xv, yv = np.meshgrid(np.arange(width), np.arange(height))
+            distance = np.sqrt((xv - x)**2 + (yv - y)**2)
+
+            # Calculate the weights for each pixel based on the distance
+            weights = np.exp(-distance**2 / (2 * sigma**2))
+
+            # Update the heatmap with the weighted values
+            heatmap += weights
+
+        # Normalize the heatmap to a range of [0, 1]
+
+        if np.max(heatmap) == 0:
+            heatmap_norm = heatmap
+        else:
+            heatmap_norm = heatmap / np.max(heatmap)
+
+        # Convert the heatmap to a 3-channel image
+        heatmap = cv2.cvtColor(np.uint8(heatmap_norm * 255), cv2.COLOR_GRAY2BGR)
+
+        # Resize the heatmap to match the size of the original image
+        heatmap = cv2.resize(heatmap, (width, height))
+
+        # Add the heatmap on top of the original image
+        heatmap_img = cv2.addWeighted(img, 0.2, heatmap, 0.8, 0)
+
+        # Show the heatmap image
+        cv2.imshow('Dinamic heatmap', heatmap_img)
+
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            cv2.destroyAllWindows()
+            break
+
+    cv2.destroyAllWindows()
+
 if __name__ == "__main__":
 
     # Getting images
     all_images_path = loadImgDatasetPaths()
 
     # Applying morphological transformations
-    imagesWithoutBG = removeBG(all_images_path)
+    imagesWithoutBG = removeBG(all_images_path, minThreshold=15, openingK=4, dilationK=1, closingK=6, smallClosingK=3, minArea=200)
 
     # Capturing the data
     myTruthDf = createMyTruth(imagesWithoutBG)
@@ -361,13 +420,16 @@ if __name__ == "__main__":
     # Shows the trajectories dinamically
     showMTTrajectories(all_images_path, myTruthDf)
 
+    # Show dinamic heatmap of each frame
+    generateDinamicHeatmap(all_images_path, myTruthDf, sigma=50)
+
     # Plot the a simple static heatmap (1 calculations per person, n per frame)
     generateSimpleHeatmap(all_images_path, myTruthDf, size=10)
 
     # Plot the static heatmap using gaussian metric (w*h calculations per person, n*w*h per frame)
     generateGaussianHeatmap(all_images_path, myTruthDf, sigma=20)
 
-
+# falta o 6,7,3 e 4
 
 '''
 Code if I want to see a specific result. Just need to change imagesWithoutBG.append(closed) if needed.
