@@ -83,12 +83,19 @@ def showGTworking(all_images_path, groundTruthDf):
         
 
 if __name__ == "__main__":
+
+    # Getting images
     all_images_path = loadImgDatasetPaths()
+
+    # Loading data form GT
     groundTruthDf = loadGroundTruth()
+
+    # Visual presentation of the data
     showGTworking(all_images_path, groundTruthDf)
 
 
 '''
+Code if I want to make a specific analysis
     # Create a black background image
     #img = cv2.imread(r"PutImageDatasetHere\View_001\frame_0001.jpg")
     print(all_images_path[0])
@@ -104,7 +111,4 @@ if __name__ == "__main__":
     cv2.imshow("Original Image", img)
     cv2.imshow("Image with Bounding Box", imgWithBox)
     cv2.waitKey(0)
-
-
-#TAVA FUNCIONANADO
 '''
