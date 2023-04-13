@@ -28,20 +28,23 @@ def loadGroundTruth():
         df = pd.read_csv(file_path, header=None, names=columns)
         # Add the DataFrame to the list
 
+    # Remove where Confidence score == 0 (not pedestrian)
+    df = df[df['Confidence score'] != 0]
+
     return df
 
 # Plots a bounding box on a certain frame
-def createBoundingBox(originalImg, xTopLeft, yTopLeft, width, height):
+def createBoundingBox(originalImg, xTopLeft, yTopLeft, width, height, color=(0, 255, 0)):
     imgWithBox = originalImg.copy()  # make a copy of the original image
     # Pixel index must be int
     xTopLeft = int(xTopLeft)
     yTopLeft = int(yTopLeft)
     width = int(width)
     height = int(height)
-    cv2.rectangle(imgWithBox, (xTopLeft, yTopLeft), (xTopLeft + width, yTopLeft + height), (0, 255, 255), 2)
+    cv2.rectangle(imgWithBox, (xTopLeft, yTopLeft), (xTopLeft + width, yTopLeft + height), color, 2)
     return imgWithBox
 
-def createIdentityNumber(originalImg, xTopLeft, yTopLeft, width, id):
+def createIdentityNumber(originalImg, xTopLeft, yTopLeft, width, id, color=(0, 255, 0)):
     # Pixel index must be int
     xTopLeft = int(xTopLeft)
     yTopLeft = int(yTopLeft)
@@ -52,7 +55,7 @@ def createIdentityNumber(originalImg, xTopLeft, yTopLeft, width, id):
     textSize = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)[0]
     textX = xTopLeft + (width - textSize[0]) // 2
     textY = yTopLeft - textSize[1] + 5
-    cv2.putText(imgWithID, text, (textX, textY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+    cv2.putText(imgWithID, text, (textX, textY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
     return imgWithID
 
 def showGTworking(all_images_path, groundTruthDf):
@@ -71,8 +74,8 @@ def showGTworking(all_images_path, groundTruthDf):
             height = row["Bounding box height"]
             id = row["Identity number"]
 
-            img = createBoundingBox(img, xTopLeft, yTopLeft, width, height)
-            img = createIdentityNumber(img, xTopLeft, yTopLeft, width, id)
+            img = createBoundingBox(img, xTopLeft, yTopLeft, width, height, (0,255,0))
+            img = createIdentityNumber(img, xTopLeft, yTopLeft, width, id, (0,255,0))
 
         cv2.imshow("image", img)
         if cv2.waitKey(25) & 0xFF == ord('q'):

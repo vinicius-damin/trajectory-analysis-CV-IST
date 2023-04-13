@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from a_GT_visualization import createBoundingBox, createIdentityNumber
 
+
 # Loads all the names of the frames from the dataset
 def loadImgDatasetPaths():
 
@@ -17,6 +18,7 @@ def loadImgDatasetPaths():
     return imagesPaths
 
 
+
 # Receives the path to all images and returns the images without the background by using a median filter
 def removeBG(pathToImages, minThreshold=15, openingK=4, dilationK=1, closingK=6, smallClosingK=3, minArea=200):
 
@@ -27,8 +29,8 @@ def removeBG(pathToImages, minThreshold=15, openingK=4, dilationK=1, closingK=6,
     images = [cv2.imread(imgPath) for imgPath in pathToImages]
 
     print('Computing median to remove background...')
-    # Compute median image (background) and return a grayscale image
-    median = cv2.cvtColor(np.median(images, axis=0).astype(np.uint8), cv2.COLOR_BGR2GRAY)
+    # Compute median image (background) by subsampling all the images and return a grayscale image
+    median = cv2.cvtColor(np.median(images[::10], axis=0).astype(np.uint8), cv2.COLOR_BGR2GRAY)
     #cv2.imshow("median img", median)
 
     # Initialize list to store binary images without background
@@ -73,6 +75,8 @@ def removeBG(pathToImages, minThreshold=15, openingK=4, dilationK=1, closingK=6,
         imagesWithoutBG.append(closed)
     print('Morphological transformations applied.')
     return imagesWithoutBG
+
+
 
 # Creates a dataframe that has all the data to create the bounding boxes on all images
 def createMyTruth(imagesWithoutBG):
@@ -156,6 +160,8 @@ def createMyTruth(imagesWithoutBG):
 
     return dfMyTruth
 
+
+
 def showMTworking(imagesPath, myAnalysisDf):
 
     print('\n\t -Starting the presentation of the results')
@@ -174,8 +180,8 @@ def showMTworking(imagesPath, myAnalysisDf):
             height = row["Bounding box height"]
             id = row["Identity number"]
 
-            img = createBoundingBox(img, xTopLeft, yTopLeft, width, height)
-            img = createIdentityNumber(img, xTopLeft, yTopLeft, width, id)
+            img = createBoundingBox(img, xTopLeft, yTopLeft, width, height, (0, 255, 255))
+            img = createIdentityNumber(img, xTopLeft, yTopLeft, width, id, (0, 255, 255))
 
         cv2.imshow("image", img)
         if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -185,6 +191,7 @@ def showMTworking(imagesPath, myAnalysisDf):
     print('Finished.')
     cv2.destroyAllWindows()
     return
+
 
 
 def showMTTrajectories(all_images_path, myTruthDf):
@@ -241,108 +248,6 @@ def showMTTrajectories(all_images_path, myTruthDf):
     cv2.destroyAllWindows()
 
 
-
-def generateSimpleHeatmap(all_images_path, myTruthDf, size=10):
-
-    print("\n\t -Calculating simple heatmap")
-
-    # Read the first image to get its dimensions
-    img = cv2.imread(all_images_path[0])
-    height, width, channels = img.shape
-
-    # Initialize the heatmap
-    heatmap = np.zeros((height, width), dtype=np.float32)
-
-    # Loop over all the images
-    for i, img_path in enumerate(all_images_path):
-        # Read the image
-        img = cv2.imread(img_path)
-
-        # Get the rows for the current frame
-        df = myTruthDf[myTruthDf['Frame number'] == i]
-
-        # Loop over the rows
-        for _, row in df.iterrows():
-            # Get the centroid coordinates
-            x = int(row['xCentroid'])
-            y = int(row['yCentroid'])
-
-            # Add to the heatmap around the given coordinates
-            heatmap[max(0, y-size):min(height, y+size), max(0, x-size):min(width, x+size)] += 1
-
-    # Calculate the percentage of time spent in each area
-    total_time = len(all_images_path)
-    heatmap_percentage = heatmap / total_time * 100
-
-    # Plot the heatmap
-    plt.imshow(heatmap_percentage, cmap='inferno')
-
-    # Add a colorbar
-    cbar = plt.colorbar()
-    cbar.set_label('% of time spent in area')
-
-    # Title
-    plt.title("Occupancy heatmap (whole scene)")
-
-    # Show the plot
-    plt.show()
-    print("Plotted")
-    
-def generateGaussianHeatmap(all_images_path, myTruthDf, sigma=20):
-
-    print("\n\t -Calculating Gaussian heatmap (whole scene)")
-
-    # Read the first image to get its dimensions
-    img = cv2.imread(all_images_path[0])
-    height, width, channels = img.shape
-
-    # Initialize the heatmap with zeros
-    heatmap = np.zeros((height, width), dtype=np.float32)
-
-    # Loop over all the images
-    for i, img_path in enumerate(all_images_path):
-        # Read the image
-        img = cv2.imread(img_path)
-
-        # Get the rows for the current frame
-        df = myTruthDf[myTruthDf['Frame number'] == i]
-
-        # Loop over the rows
-        for _, row in df.iterrows():
-            # Get the centroid coordinates
-            x = int(row['xCentroid'])
-            y = int(row['yCentroid'])
-
-            # Set the standard deviation of the Gaussian kernel
-            sigma = sigma
-
-            # Calculate the distance from the current point to all other points
-            xv, yv = np.meshgrid(np.arange(width), np.arange(height))
-            distance = np.sqrt((xv - x)**2 + (yv - y)**2)
-
-            # Calculate the weights for each pixel based on the distance
-            weights = np.exp(-distance**2 / (2 * sigma**2))
-
-            # Update the heatmap with the weighted values
-            heatmap += weights
-
-    # Calculate the percentage of time spent in each area
-    total_time = len(all_images_path)
-    heatmap_percentage = heatmap / total_time * 100
-
-    # Plot the heatmap
-    plt.imshow(heatmap_percentage, cmap='inferno')
-
-    # Add a colorbar
-    cbar = plt.colorbar()
-    cbar.set_label('% of time spent in area')
-
-    # Title
-    plt.title("Occupancy heatmap (whole scene)")
-
-    # Show the plot
-    plt.show()
-    print("Plotted")
 
 def generateDinamicHeatmap(all_images_path, myTruthDf, sigma=20):
     # Loop over all the images
@@ -403,16 +308,142 @@ def generateDinamicHeatmap(all_images_path, myTruthDf, sigma=20):
 
     cv2.destroyAllWindows()
 
+
+
+def generateSimpleHeatmap(all_images_path, myTruthDf, size=10):
+
+    print("\n\t -Calculating simple heatmap")
+
+    # Read the first image to get its dimensions
+    img = cv2.imread(all_images_path[0])
+    height, width, channels = img.shape
+
+    # Initialize the heatmap
+    heatmap = np.zeros((height, width), dtype=np.float32)
+
+    # Loop over all the images
+    for i, img_path in enumerate(all_images_path):
+        # Read the image
+        img = cv2.imread(img_path)
+
+        # Get the rows for the current frame
+        df = myTruthDf[myTruthDf['Frame number'] == i]
+
+        # Loop over the rows
+        for _, row in df.iterrows():
+            # Get the centroid coordinates
+            x = int(row['xCentroid'])
+            y = int(row['yCentroid'])
+
+            # Add to the heatmap around the given coordinates
+            heatmap[max(0, y-size):min(height, y+size), max(0, x-size):min(width, x+size)] += 1
+
+    # Calculate the percentage of time spent in each area
+    total_time = len(all_images_path)
+    heatmap_percentage = heatmap / total_time * 100
+
+    # Plot the heatmap
+    plt.imshow(heatmap_percentage, cmap='inferno')
+
+    # Add a colorbar
+    cbar = plt.colorbar()
+    cbar.set_label('% of time spent in area')
+
+    # Title
+    plt.title("Occupancy heatmap (whole scene)")
+
+    # Show the plot
+    plt.show()
+    print("Plotted")
+    
+
+
+def generateGaussianHeatmap(all_images_path, myTruthDf, sigma=20):
+
+    print("\n\t -Calculating Gaussian heatmap (whole scene)")
+
+    # Read the first image to get its dimensions
+    img = cv2.imread(all_images_path[0])
+    height, width, channels = img.shape
+
+    # Initialize the heatmap with zeros
+    heatmap = np.zeros((height, width), dtype=np.float32)
+
+    # Loop over all the images
+    for i, img_path in enumerate(all_images_path):
+        # Read the image
+        img = cv2.imread(img_path)
+
+        # Get the rows for the current frame
+        df = myTruthDf[myTruthDf['Frame number'] == i]
+
+        # Loop over the rows
+        for _, row in df.iterrows():
+            # Get the centroid coordinates
+            x = int(row['xCentroid'])
+            y = int(row['yCentroid'])
+
+            # Set the standard deviation of the Gaussian kernel
+            sigma = sigma
+
+            # Calculate the distance from the current point to all other points
+            xv, yv = np.meshgrid(np.arange(width), np.arange(height))
+            distance = np.sqrt((xv - x)**2 + (yv - y)**2)
+
+            # Calculate the weights for each pixel based on the distance
+            weights = np.exp(-distance**2 / (2 * sigma**2))
+
+            # Update the heatmap with the weighted values
+            heatmap += weights
+
+    # Calculate the percentage of time spent in each area
+    total_time = len(all_images_path)
+    heatmap_percentage = heatmap / total_time * 100
+
+    # Plot the heatmap
+    plt.imshow(heatmap_percentage, cmap='inferno')
+
+    # Add a colorbar
+    cbar = plt.colorbar()
+    cbar.set_label('% of time spent in area')
+
+    # Title
+    plt.title("Occupancy heatmap (whole scene)")
+
+    # Show the plot
+    plt.show()
+    print("Plotted")
+
+
+
 if __name__ == "__main__":
 
     # Getting images
     all_images_path = loadImgDatasetPaths()
 
-    # Applying morphological transformations
-    imagesWithoutBG = removeBG(all_images_path, minThreshold=15, openingK=4, dilationK=1, closingK=6, smallClosingK=3, minArea=200)
+    # Define the parameters for removeBG function
+    minThreshold = 15
+    openingK = 4
+    dilationK = 1
+    closingK = 6
+    smallClosingK = 3
+    minArea = 200
 
-    # Capturing the data
-    myTruthDf = createMyTruth(imagesWithoutBG)
+    # Define the filename
+    filename = f"myTruthDf-{minThreshold}-{openingK}-{dilationK}-{closingK}-{smallClosingK}-{minArea}.csv"
+
+    # Check if the simulation was already done, if so, load the data
+    if os.path.isfile(filename):
+        # If the file exists, read it in
+        print("This analysis was already done")
+        myTruthDf = pd.read_csv(filename)
+
+    # Otherwise, load run the algorithm, create the data and save it to a .csv
+    else:
+        # If the file does not exist, run removeBG and createMyTruth and save the output to a file
+        imagesWithoutBG = removeBG(all_images_path, minThreshold=minThreshold, openingK=openingK, dilationK=dilationK, closingK=closingK, smallClosingK=smallClosingK, minArea=minArea)
+        myTruthDf = createMyTruth(imagesWithoutBG)
+        myTruthDf.to_csv(filename, index=False)
 
     # Presenting results
     showMTworking(all_images_path, myTruthDf)
