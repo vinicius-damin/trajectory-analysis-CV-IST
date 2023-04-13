@@ -10,4 +10,4 @@ Specifically, it is used the dataset S2.L1 (View001). This means that isolated p
 # How to use
 Each python file is responsible for solving a certain challenge
 
-#
+Will finish this in the future, too busy now

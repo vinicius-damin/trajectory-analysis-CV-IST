@@ -77,7 +77,7 @@ def showGTworking(all_images_path, groundTruthDf):
             img = createBoundingBox(img, xTopLeft, yTopLeft, width, height, (0,255,0))
             img = createIdentityNumber(img, xTopLeft, yTopLeft, width, id, (0,255,0))
 
-        cv2.imshow("image", img)
+        cv2.imshow("Ground truth detection algorithm", img)
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break
@@ -95,6 +95,8 @@ if __name__ == "__main__":
 
     # Visual presentation of the data
     showGTworking(all_images_path, groundTruthDf)
+
+
 
 
 '''

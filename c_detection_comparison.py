@@ -39,7 +39,7 @@ def showBothWorking(all_images_path, groundTruthDf, myTruthDf, timeOfFrames=25):
             img = createBoundingBox(img, xTopLeft_mt, yTopLeft_mt, width_mt, height_mt, (0, 255, 255))
             img = createIdentityNumber(img, xTopLeft_mt, yTopLeft_mt, width_mt, id_mt, (0, 255, 255))
 
-        cv2.imshow("image", img)
+        cv2.imshow("Detection: Green (GT) and Yellow (my algorithm)", img)
         if cv2.waitKey(timeOfFrames) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break

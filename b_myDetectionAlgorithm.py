@@ -31,7 +31,6 @@ def removeBG(pathToImages, minThreshold=15, openingK=4, dilationK=1, closingK=6,
     print('Computing median to remove background...')
     # Compute median image (background) by subsampling all the images and return a grayscale image
     median = cv2.cvtColor(np.median(images[::10], axis=0).astype(np.uint8), cv2.COLOR_BGR2GRAY)
-    #cv2.imshow("median img", median)
 
     # Initialize list to store binary images without background
     imagesWithoutBG = []
@@ -41,20 +40,16 @@ def removeBG(pathToImages, minThreshold=15, openingK=4, dilationK=1, closingK=6,
     for img in images:
         # Convert the image to grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        #cv2.imshow("gray img", gray)
 
         # Subtract the median from the grayscale image to obtain the foreground
         foreground = cv2.absdiff(gray, median)
-        #cv2.imshow("foreground img", foreground)
    
         # Threshold the foreground to obtain a binary image
         thresholded = cv2.threshold(foreground, minThreshold, 255, cv2.THRESH_BINARY)[1]
-        #cv2.imshow("thresholded", thresholded)   
 
         # Apply opening to remove small objects or noise from binary image
         kernel = np.ones((openingK, openingK),np.uint8)
         opened = cv2.morphologyEx(thresholded, cv2.MORPH_OPEN, kernel)
-        #cv2.imshow("opened", opened)  
 
         # Dilation to fill gap between head and body
         kernel = np.ones((dilationK,dilationK),np.uint8)
@@ -64,13 +59,13 @@ def removeBG(pathToImages, minThreshold=15, openingK=4, dilationK=1, closingK=6,
         # Perform a closing operation to fill in big gaps in the objects
         kernel = np.ones((closingK,closingK),np.uint8)
         closed = cv2.morphologyEx(dilated, cv2.MORPH_CLOSE, kernel)
-        # Perform closing operations to fill in small gaps in the objects
+
+        # Perform many closing operations to fill in small gaps in the objects
         kernel = np.ones((smallClosingK,smallClosingK),np.uint8)
         closed = cv2.morphologyEx(closed, cv2.MORPH_CLOSE, kernel)
         closed = cv2.morphologyEx(closed, cv2.MORPH_CLOSE, kernel)
         closed = cv2.morphologyEx(closed, cv2.MORPH_CLOSE, kernel)
         closed = cv2.morphologyEx(closed, cv2.MORPH_CLOSE, kernel)     
-        #cv2.imshow("closed img 3", closed)
 
         imagesWithoutBG.append(closed)
     print('Morphological transformations applied.')
@@ -183,7 +178,7 @@ def showMTworking(imagesPath, myAnalysisDf):
             img = createBoundingBox(img, xTopLeft, yTopLeft, width, height, (0, 255, 255))
             img = createIdentityNumber(img, xTopLeft, yTopLeft, width, id, (0, 255, 255))
 
-        cv2.imshow("image", img)
+        cv2.imshow("My detection algorithm", img)
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break
@@ -454,13 +449,15 @@ if __name__ == "__main__":
     # Show dinamic heatmap of each frame
     generateDinamicHeatmap(all_images_path, myTruthDf, sigma=50)
 
-    # Plot the a simple static heatmap (1 calculations per person, n per frame)
+    # Plot the a simple static heatmap (10*10 calculations per person, n per frame)
     generateSimpleHeatmap(all_images_path, myTruthDf, size=10)
 
     # Plot the static heatmap using gaussian metric (w*h calculations per person, n*w*h per frame)
     generateGaussianHeatmap(all_images_path, myTruthDf, sigma=20)
 
-# falta o 6,7,3 e 4
+
+
+
 
 '''
 Code if I want to see a specific result. Just need to change imagesWithoutBG.append(closed) if needed.

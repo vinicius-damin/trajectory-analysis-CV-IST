@@ -51,7 +51,6 @@ def calculate_success_plot(groundTruthDf, myTruthDf, thresholds=np.arange(0, 1.0
             i_idx = groundTruthDf.index.get_loc(i)
             j_idx = myTruthDf.index.get_loc(j)
             iou_matrix[i_idx, j_idx] = calculate_iou(gt_box, pred_box)
-        #showBothWorking(selected_image_paths,groundTruthDf,myTruthDf, 5000)
 
     # Calculate success rates for each threshold
     success_rates = np.zeros((num_thresholds,))
@@ -278,15 +277,18 @@ if __name__ == "__main__":
         myTruthDf = createMyTruth(imagesWithoutBG)
         myTruthDf.to_csv(filename, index=False)
 
-    # FP, FN and TP
-    calculate_detection_results(groundTruthDf, myTruthDf, thresholds=np.arange(0, 1.01, 0.2))
-
     # Plot the Sucess Plot
     calculate_success_plot(groundTruthDf, myTruthDf, thresholds=np.arange(0, 1.01, 0.1))
     
+    # FP, FN and TP
+    calculate_detection_results(groundTruthDf, myTruthDf, thresholds=np.arange(0, 1.01, 0.2))
+
+    
 
 
-    # TO TEST I WILL USE ONLY SOME FRAMES
+
+'''
+    # Code to test in just some images, it may only work if it frames_to_select starts from 1 ascending to the final value (range(1, final_frame)) 
     #frames_to_select = [10, 100, 500]
     #frames_to_select = range(1,100)
     # select the first 10 frames from groundTruthDf
@@ -306,3 +308,4 @@ if __name__ == "__main__":
     
     # Sucess plot
     #plot_success(groundTruthDf_selected, myTruthDf_selected)
+'''
