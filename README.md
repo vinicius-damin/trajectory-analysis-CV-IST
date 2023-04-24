@@ -30,12 +30,15 @@ Each python file is responsible for solving a certain challenge, you just need t
 
 # Expected results
 
-After you run all the python files, you will see videos that show the tracking working:
+After you run all the python files, you will see **videos that show the tracking** working:
 
 ![Algorithm Comparisson - Example](My%20analysis%20results/AlgorithmComparissonExample.png)
 
-And also this kind of data of about the quality of the performance:
+And also data of about the **quality** of the performance.
+This is a success plot that shows how well fitted this algorithms bounding boxes were, compared to the ground truth:
 
 ![Sucess plot](My%20analysis%20results/success_plot.png)
-![Algorithm Performance (low IoU)](My%20analysis%20results/EvaluationPerformance%20-%20high%20thresholds.png)
+
+And this graphs show the numbers of True Positives, False Positives and False Negatives according to the threshold (a 0.4 threshold means that only bounding boxes that had an IoU of 40% or more were considered correct):
+![Algorithm Performance (low IoU)](My%20analysis%20results/EvaluationPerformance%20-%20low%20thresholds.png)
 ![Algorithm Performance (high IoU)](My%20analysis%20results/EvaluationPerformance%20-%20high%20thresholds.png)
