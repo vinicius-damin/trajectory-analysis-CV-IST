@@ -84,6 +84,7 @@ def calculate_success_plot(groundTruthDf, myTruthDf, thresholds=np.arange(0, 1.0
     plt.xlim([0, 1])
     plt.ylim([0, 1.1])
     plt.legend()
+    plt.savefig('success_plot.png')
     plt.show()
 
 
@@ -242,6 +243,10 @@ def calculate_detection_results(groundTruthDf, myTruthDf, thresholds=np.arange(0
         axs2[i,2].tick_params(axis='both', which='major', labelsize=6)
 
     plt.tight_layout()
+
+    fig.savefig('EvaluationPerformance - low thresholds.png', dpi=300)
+    fig2.savefig('EvaluationPerformance - high thresholds.png', dpi=300)
+
     plt.show()
 
 

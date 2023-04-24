@@ -4,7 +4,16 @@ import os
 from a_GT_visualization import loadGroundTruth, createBoundingBox, createIdentityNumber
 from b_myDetectionAlgorithm import loadImgDatasetPaths, removeBG, createMyTruth
 
-def showBothWorking(all_images_path, groundTruthDf, myTruthDf, timeOfFrames=25):
+def showBothWorking(all_images_path, groundTruthDf, myTruthDf, timeOfFrames=25, video_name='AlgorithmComparisson.mp4'):
+
+    # Read the first image to get its dimensions
+    img = cv2.imread(all_images_path[0])
+    height, width, channels = img.shape
+
+    # Initialize the video writer
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(video_name, fourcc, 24.0, (width, height), isColor=True)
+
     # Loop through the images and display them one after another like a video
     for idx, img_path in enumerate(all_images_path):
 
@@ -44,7 +53,14 @@ def showBothWorking(all_images_path, groundTruthDf, myTruthDf, timeOfFrames=25):
             cv2.destroyAllWindows()
             break
 
+        # Write the current frame to the video file
+        out.write(img)
+
     cv2.destroyAllWindows()
+
+    # Release the video writer
+    out.release()
+    print("Generated video: " + video_name)
 
 
 if __name__ == "__main__":
