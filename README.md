@@ -39,6 +39,6 @@ This is a success plot that shows how well fitted this algorithms bounding boxes
 
 ![Sucess plot](My%20analysis%20results/success_plot.png)
 
-And this graphs show the numbers of True Positives, False Positives and False Negatives according to the threshold (a 0.4 threshold means that only bounding boxes that had an IoU of 40% or more were considered correct):
+And these graphs show the numbers of True Positives, False Positives and False Negatives according to the threshold (a 0.4 threshold means that only bounding boxes that had an IoU of 40% or more were considered correct):
 ![Algorithm Performance (low IoU)](My%20analysis%20results/EvaluationPerformance%20-%20low%20thresholds.png)
 ![Algorithm Performance (high IoU)](My%20analysis%20results/EvaluationPerformance%20-%20high%20thresholds.png)
